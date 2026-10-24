@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="tr" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChemMol - Mol & AKB Hesaplama Platformu</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-effect {
+            box-shadow: 0 0 25px -5px rgba(59, 130, 246, 0.2);
+        }
+        .calc-btn {
+            transition: all 0.15s ease;
+        }
+        .calc-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="h-full flex flex-col min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-800 bg-slate-900 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/30">
+                        <i class="fa-solid font-bold fa-calculator text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-xl tracking-tight bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">ChemMol Calc</span>
+                        <span class="text-xs text-slate-400 block -mt-1">Mol & AKB Kimya Hesap Makinesi</span>
+                    </div>
+                </div>
+                <nav class="hidden md:flex space-x-1">
+                    <button onclick="switchTab('calc-mol')" id="tab-btn-calc-mol" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all bg-indigo-600 text-white shadow-md">
+                        <i class="fa-solid fa-calculator mr-1.5"></i> Mol Hesap Makinesi
+                    </button>
+                    <button onclick="switchTab('calc-formula')" id="tab-btn-calc-formula" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-atom mr-1.5"></i> Formül & AKB Makinesi
+                    </button>
+                    <button onclick="switchTab('guide-basics')" id="tab-btn-guide-basics" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-book-open mr-1.5"></i> Temel Bilgiler
+                    </button>
+                    <button onclick="switchTab('guide-gases')" id="tab-btn-guide-gases" class="tab-btn px-4 py-2 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+                        <i class="fa-solid fa-wind mr-1.5"></i> Gaz Yasaları
+                    </button>
+                </nav>
+            </div>
+        </div>
+        <!-- Mobile Navigation Bar -->
+        <div class="md:hidden flex border-t border-slate-800 bg-slate-900 justify-around p-2 text-xs">
+            <button onclick="switchTab('calc-mol')" class="mobile-tab-btn flex flex-col items-center py-1 px-2 rounded text-indigo-400">
+                <i class="fa-solid fa-calculator text-base"></i>
+                <span>Mol</span>
+            </button>
+            <button onclick="switchTab('calc-formula')" class="mobile-tab-btn flex flex-col items-center py-1 px-2 rounded text-slate-400">
+                <i class="fa-solid fa-atom text-base"></i>
+                <span>AKB</span>
+            </button>
+            <button onclick="switchTab('guide-basics')" class="mobile-tab-btn flex flex-col items-center py-1 px-2 rounded text-slate-400">
+                <i class="fa-solid fa-book-open text-base"></i>
+                <span>Temel</span>
+            </button>
+            <button onclick="switchTab('guide-gases')" class="mobile-tab-btn flex flex-col items-center py-1 px-2 rounded text-slate-400">
+                <i class="fa-solid fa-wind text-base"></i>
+                <span>Gazlar</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-6">
+
+        <!-- TAB 1: MOL HESAP MAKİNESİ -->
+        <section id="tab-calc-mol" class="tab-content block space-y-8">
+            <div class="text-center max-w-2xl mx-auto space-y-2 pt-2">
+                <h1 class="text-3xl font-extrabold text-white sm:text-4xl">Mol Dönüşüm Hesap Makinesi</h1>
+                <p class="text-slate-400 text-sm sm:text-base">Molar kütle, mol sayısı, gram, tanecik sayısı veya gaz hacminden birini girip hesaplama yapın.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- HESAP MAKİNESİ GÖVDESİ -->
+                <div class="lg:col-span-5 glass-panel rounded-3xl p-6 shadow-2xl border border-indigo-500/20 glow-effect space-y-4">
+                    <!-- Makine Ekranı -->
+                    <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 shadow-inner">
+                        <div class="flex justify-between items-center text-xs text-slate-400">
+                            <span>Mod: <strong class="text-indigo-400" id="current-mode-label">Mol Cinsinden Hesapla</strong></span>
+                            <span class="bg-slate-800 px-2 py-0.5 rounded text-[10px] text-indigo-300 font-mono">STP: 0°C, 1 atm</span>
+                        </div>
+                        
+                        <!-- Aktif Değer Göstergesi -->
+                        <div class="text-right">
+                            <span class="text-xs text-slate-500 block">Molar Kütle (Ma): <span id="display-ma-val" class="text-slate-300 font-mono">18.015</span> g/mol</span>
+                            <div id="calc-display" class="text-3xl font-mono font-bold text-emerald-400 tracking-wider truncate py-1">1</div>
+                            <span id="calc-display-unit" class="text-xs text-indigo-300 font-medium">mol</span>
+                        </div>
+                    </div>
+
+                    <!-- Giriş Türü Seçim Tuşları -->
+                    <div class="grid grid-cols-4 gap-2 text-xs font-semibold">
+                        <button onclick="setCalcMode('mol')" id="mode-btn-mol" class="calc-btn py-2.5 rounded-xl bg-indigo-600 text-white text-center shadow">Mol (n)</button>
+                        <button onclick="setCalcMode('mass')" id="mode-btn-mass" class="calc-btn py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-center">Gram (m)</button>
+                        <button onclick="setCalcMode('particles')" id="mode-btn-particles" class="calc-btn py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-center">Tane (N)</button>
+                        <button onclick="setCalcMode('volume')" id="mode-btn-volume" class="calc-btn py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-center">Litre (V)</button>
+                    </div>
+
+                    <!-- Bileşik Hazır Seçimleri -->
+                    <div>
+                        <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Örnek Bileşik Seç</label>
+                        <select id="mol-preset-select" onchange="applyPreset()" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="18.015">Su (H₂O) - 18.015 g/mol</option>
+                            <option value="44.01">Karbondioksit (CO₂) - 44.01 g/mol</option>
+                            <option value="16.04">Metan (CH₄) - 16.04 g/mol</option>
+                            <option value="58.44">Masa Tuzu (NaCl) - 58.44 g/mol</option>
+                            <option value="180.16">Glikoz (C₆H₁₂O₆) - 180.16 g/mol</option>
+                            <option value="32.00">Oksijen Gazı (O₂) - 32.00 g/mol</option>
+                        </select>
+                    </div>
+
+                    <!-- Tuş Takımı (Numpad) -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="pressKey('7')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">7</button>
+                        <button onclick="pressKey('8')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">8</button>
+                        <button onclick="pressKey('9')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">9</button>
+                        
+                        <button onclick="pressKey('4')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">4</button>
+                        <button onclick="pressKey('5')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">5</button>
+                        <button onclick="pressKey('6')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">6</button>
+                        
+                        <button onclick="pressKey('1')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">1</button>
+                        <button onclick="pressKey('2')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">2</button>
+                        <button onclick="pressKey('3')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">3</button>
+                        
+                        <button onclick="pressKey('.')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">.</button>
+                        <button onclick="pressKey('0')" class="calc-btn py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-lg rounded-xl shadow">0</button>
+                        <button onclick="backspaceKey()" class="calc-btn py-3 bg-rose-900/60 hover:bg-rose-800 text-rose-200 font-bold text-lg rounded-xl shadow"><i class="fa-solid fa-backspace"></i></button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="clearCalc()" class="calc-btn py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs rounded-xl shadow">C (Temizle)</button>
+                        <button onclick="executeCalc()" class="calc-btn py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl shadow">HESAPLA =</button>
+                    </div>
+                </div>
+
+                <!-- SONUÇ VE ADIM DÖNÜŞÜM PANELİ -->
+                <div class="lg:col-span-7 space-y-6">
+                    <!-- Kartlar -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="glass-panel p-4 rounded-xl border-l-4 border-indigo-500">
+                            <span class="text-xs text-slate-400 block font-medium">Mol Sayısı (n)</span>
+                            <span id="res-card-mol" class="text-lg sm:text-xl font-bold font-mono text-indigo-300">1.00</span>
+                            <span class="text-[10px] text-slate-500 block mt-1">mol</span>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl border-l-4 border-blue-500">
+                            <span class="text-xs text-slate-400 block font-medium">Kütle (m)</span>
+                            <span id="res-card-mass" class="text-lg sm:text-xl font-bold font-mono text-blue-300">18.02</span>
+                            <span class="text-[10px] text-slate-500 block mt-1">gram</span>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl border-l-4 border-emerald-500">
+                            <span class="text-xs text-slate-400 block font-medium">Tanecik Sayısı (N)</span>
+                            <span id="res-card-particles" class="text-sm sm:text-base font-bold font-mono text-emerald-300 truncate block">6.022 × 10²³</span>
+                            <span class="text-[10px] text-slate-500 block mt-1">tane (N<sub>A</sub> cinsinden)</span>
+                        </div>
+                        <div class="glass-panel p-4 rounded-xl border-l-4 border-amber-500">
+                            <span class="text-xs text-slate-400 block font-medium">Gaz Hacmi (V)</span>
+                            <span id="res-card-volume" class="text-lg sm:text-xl font-bold font-mono text-amber-300">22.40</span>
+                            <span class="text-[10px] text-slate-500 block mt-1">Litre (N.K)</span>
+                        </div>
+                    </div>
+
+                    <!-- Detaylı Adım Adım Açıklama -->
+                    <div class="glass-panel rounded-2xl p-6 shadow-xl space-y-4">
+                        <h3 class="text-md font-semibold text-white flex items-center border-b border-slate-700/60 pb-3">
+                            <i class="fa-solid fa-square-root-variable text-indigo-400 mr-2"></i> Adım Adım Hesaplama Adımları
+                        </h3>
+                        <div id="mol-step-by-step" class="font-mono text-xs sm:text-sm text-slate-300 space-y-2 bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+                            <!-- JS dinamik içerik -->
+                        </div>
+                    </div>
+
+                    <!-- Avogadro Sabiti Bilgi Kutusu -->
+                    <div class="p-4 bg-indigo-950/40 border border-indigo-800/40 rounded-xl flex items-start space-x-3 text-xs sm:text-sm text-indigo-200">
+                        <i class="fa-solid fa-circle-info text-indigo-400 text-lg mt-0.5"></i>
+                        <div>
+                            <span class="font-semibold text-white">Avogadro Sabiti (N<sub>A</sub>):</span> 1 mol herhangi bir madde tam olarak <b>6.022 × 10²³</b> adet tanecik (atom, molekül veya iyon) içerir. Gazlar için 1 mol ideal gaz Normal Koşullar Altında (0°C ve 1 atm) <b>22.4 Litre</b> hacim kaplar.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: FORMÜLDEN MOLAR KÜTLE VE AKB HESAPLAMA MAKİNESİ -->
+        <section id="tab-calc-formula" class="tab-content hidden space-y-8">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <h1 class="text-3xl font-extrabold text-white sm:text-4xl">Formül & AKB Hesap Makinesi</h1>
+                <p class="text-slate-400 text-sm sm:text-base">Kimyasal formülü tuşlayın veya yazın; molar kütle, 1 tanesinin AKB değeri ve kütlece % bileşimi anında hesaplansın.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- HESAP MAKİNESİ TİPİ FORMÜL PANELİ -->
+                <div class="lg:col-span-5 glass-panel rounded-3xl p-6 shadow-2xl border border-indigo-500/20 glow-effect space-y-4">
+                    <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 shadow-inner">
+                        <span class="text-xs text-slate-400 block">Kimyasal Formül Ekranı:</span>
+                        <div id="formula-display" class="text-2xl font-mono font-bold text-indigo-300 tracking-wider truncate py-1">C6H12O6</div>
+                    </div>
+
+                    <!-- Formül Tuş Takımı -->
+                    <div class="grid grid-cols-4 gap-2 text-xs font-bold font-mono">
+                        <button onclick="pressFormulaKey('C')" class="calc-btn py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl">C</button>
+                        <button onclick="pressFormulaKey('H')" class="calc-btn py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl">H</button>
+                        <button onclick="pressFormulaKey('O')" class="calc-btn py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl">O</button>
+                        <button onclick="pressFormulaKey('N')" class="calc-btn py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl">N</button>
+
+                        <button onclick="pressFormulaKey('S')" class="calc-btn py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl">S</button>
+                        <button onclick="pressFormulaKey('Cl')" class="calc-btn py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl">Cl</button>
+                        <button onclick="pressFormulaKey('Na')" class="calc-btn py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl">Na</button>
+                        <button onclick="pressFormulaKey('Ca')" class="calc-btn py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl">Ca</button>
+
+                        <button onclick="pressFormulaKey('(')" class="calc-btn py-2.5 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 rounded-xl">(</button>
+                        <button onclick="pressFormulaKey(')')" class="calc-btn py-2.5 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 rounded-xl">)</button>
+                        <button onclick="pressFormulaKey('Fe')" class="calc-btn py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl">Fe</button>
+                        <button onclick="pressFormulaKey('Cu')" class="calc-btn py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl">Cu</button>
+                    </div>
+
+                    <!-- Sayı Tuşları -->
+                    <div class="grid grid-cols-5 gap-1.5 text-xs font-bold font-mono">
+                        <button onclick="pressFormulaKey('1')" class="calc-btn py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg">1</button>
+                        <button onclick="pressFormulaKey('2')" class="calc-btn py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg">2</button>
+                        <button onclick="pressFormulaKey('3')" class="calc-btn py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg">3</button>
+                        <button onclick="pressFormulaKey('4')" class="calc-btn py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg">4</button>
+                        <button onclick="pressFormulaKey('5')" class="calc-btn py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg">5</button>
+                        <button onclick="pressFormulaKey('6')" class="calc-btn py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg">6</button>
+                        <button onclick="pressFormulaKey('7')" class="calc-btn py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg">7</button>
+                        <button onclick="pressFormulaKey('8')" class="calc-btn py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg">8</button>
+                        <button onclick="pressFormulaKey('9')" class="calc-btn py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg">9</button>
+                        <button onclick="pressFormulaKey('0')" class="calc-btn py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg">0</button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="clearFormula()" class="calc-btn py-2.5 bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs rounded-xl shadow">C (Temizle)</button>
+                        <button onclick="calculateFormula()" class="calc-btn py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow">HESAPLA =</button>
+                    </div>
+
+                    <!-- Hazır Butonlar -->
+                    <div>
+                        <span class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Hızlı Örnekler</span>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="setFormula('H2O')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-mono text-slate-200">H₂O</button>
+                            <button onclick="setFormula('CO2')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-mono text-slate-200">CO₂</button>
+                            <button onclick="setFormula('C6H12O6')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-mono text-slate-200">C₆H₁₂O₆</button>
+                            <button onclick="setFormula('Ca(OH)2')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-mono text-slate-200">Ca(OH)₂</button>
+                        </div>
+                    </div>
+
+                    <!-- AKB Mini Dönüştürücü -->
+                    <div class="pt-3 border-t border-slate-700/60 space-y-2">
+                        <h3 class="text-xs font-semibold text-amber-300 flex items-center">
+                            <i class="fa-solid fa-scale-balanced mr-1.5"></i> AKB & Gram Dönüştürücü
+                        </h3>
+                        <div class="text-xs text-slate-300 space-y-2">
+                            <div>
+                                <input type="number" id="input-akb-val" value="1" oninput="convertAkbToGram()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-white font-mono text-xs" placeholder="AKB Değeri">
+                            </div>
+                            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                                <div class="text-[10px] text-slate-400">Gram Karşılığı:</div>
+                                <div id="akb-to-gram-res" class="font-mono text-amber-400 text-xs font-semibold truncate">1.6605 × 10⁻²⁴ g</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sonuçlar Paneli -->
+                <div class="lg:col-span-7 space-y-6">
+                    <!-- Formül Özet Kartı -->
+                    <div class="glass-panel p-6 rounded-2xl border border-indigo-500/30 glow-effect relative overflow-hidden">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <span class="text-xs font-semibold text-indigo-400 uppercase tracking-widest">Hesaplanan Formül</span>
+                                <h2 id="res-formula-display" class="text-3xl sm:text-4xl font-extrabold text-white font-mono tracking-wider">C₆H₁₂O₆</h2>
+                            </div>
+                            <div class="text-left sm:text-right">
+                                <span class="text-xs text-slate-400 block">Molar Kütle (1 Mol)</span>
+                                <span id="res-molar-mass" class="text-2xl sm:text-3xl font-black text-emerald-400 font-mono">180.156 <span class="text-sm font-normal text-slate-300">g/mol</span></span>
+                            </div>
+                        </div>
+
+                        <!-- AKB Eşdeğerlik Paneli -->
+                        <div class="mt-6 pt-4 border-t border-slate-700/60 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+                                <span class="text-xs text-slate-400 block font-medium">1 Tanecik Kütlesi (AKB)</span>
+                                <span id="res-single-akb" class="text-base font-bold font-mono text-amber-300">180.156 akb</span>
+                            </div>
+                            <div class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
+                                <span class="text-xs text-slate-400 block font-medium">1 Tanecik Kütlesi (Gram)</span>
+                                <span id="res-single-gram" class="text-base font-bold font-mono text-blue-300 truncate block">2.991 × 10⁻²² g</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Element Dağılım Tablosu ve Grafik -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Tablo -->
+                        <div class="glass-panel p-5 rounded-2xl space-y-3">
+                            <h3 class="text-sm font-semibold text-white border-b border-slate-700/60 pb-2 flex items-center">
+                                <i class="fa-solid fa-list-check text-indigo-400 mr-2"></i> Element Bileşimi
+                            </h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left text-xs text-slate-300">
+                                    <thead class="bg-slate-800/60 text-slate-400 uppercase text-[10px]">
+                                        <tr>
+                                            <th class="p-2">Element</th>
+                                            <th class="p-2 text-center">Adet</th>
+                                            <th class="p-2 text-right">Atom Kütlesi</th>
+                                            <th class="p-2 text-right">Kütlece %</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="res-element-table-body" class="divide-y divide-slate-800 font-mono">
+                                        <!-- JS ile dolacak -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Pasta Grafik -->
+                        <div class="glass-panel p-5 rounded-2xl flex flex-col items-center justify-center">
+                            <h3 class="text-sm font-semibold text-white w-full border-b border-slate-700/60 pb-2 mb-3 flex items-center">
+                                <i class="fa-solid fa-chart-pie text-indigo-400 mr-2"></i> Kütlece Yüzde Dağılımı
+                            </h3>
+                            <div class="w-full max-w-[200px] h-[200px] relative">
+                                <canvas id="compositionChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: TEMEL BİLGİLER REHBERİ -->
+        <section id="tab-guide-basics" class="tab-content hidden space-y-8">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <h1 class="text-3xl font-extrabold text-white sm:text-4xl">Temel Kimya Bilgileri</h1>
+                <p class="text-slate-400 text-sm sm:text-base">Kimyanın temel taşları olan Mol kavramı, Avogadro sayısı ve Atomik Kütle Birimi (AKB) hakkında bilmeniz gereken her şey.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Kart 1: Mol Nedir? -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 bg-indigo-600/20 text-indigo-400 rounded-xl flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-box-archive"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Mol Kavramı Nedir?</h3>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Mol, mikro dünyadaki atom ve molekülleri günlük hayatta ölçülebilir büyüklüklere bağlayan bir sayma birimidir. Tıpkı 1 düzinenin 12 adet anlamına gelmesi gibi, <b>1 mol</b> de tam olarak <b>6.022 × 10²³ adet</b> taneciği ifade eder.
+                    </p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-indigo-300">
+                        1 Mol = 6.022 × 10²³ tane (Avogadro Sayısı - N<sub>A</sub>)
+                    </div>
+                </div>
+
+                <!-- Kart 2: AKB Nedir? -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 bg-amber-600/20 text-amber-400 rounded-xl flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-scale-unbalanced"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">AKB (Atomik Kütle Birimi) Nedir?</h3>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Atomik Kütle Birimi (AKB), tek bir atom veya molekülün kütlesini ifade etmek için kullanılan mikro bir kütle birimidir. Standart olarak 1 tane Karbon-12 (¹²C) atomunun kütlesinin 1/12'si <b>1 akb</b> kabul edilmiştir.
+                    </p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-amber-300">
+                        1 akb = 1 / N<sub>A</sub> gram = 1.66054 × 10⁻²⁴ gram
+                    </div>
+                </div>
+
+                <!-- Kart 3: Temel Formüller -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 bg-emerald-600/20 text-emerald-400 rounded-xl flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-square-root-variable"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">Temel Mol Formülleri</h3>
+                    <ul class="text-xs sm:text-sm text-slate-300 space-y-2 font-mono">
+                        <li class="bg-slate-900/80 p-2 rounded border border-slate-800">
+                            <b>Kütleden Mol:</b> n = m / M<sub>a</sub>
+                        </li>
+                        <li class="bg-slate-900/80 p-2 rounded border border-slate-800">
+                            <b>Tanecik Sayısından Mol:</b> n = N / N<sub>A</sub>
+                        </li>
+                        <li class="bg-slate-900/80 p-2 rounded border border-slate-800">
+                            <b>Gaz Hacminden Mol (N.K):</b> n = V / 22.4
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Kart 4: Altın Kurallar & Özet -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3">
+                    <div class="w-10 h-10 bg-blue-600/20 text-blue-400 rounded-xl flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-white">AKB ile Gram Arasındaki İlişki</h3>
+                    <div class="text-xs sm:text-sm text-slate-300 space-y-2">
+                        <p>Kimyada karıştırılan en önemli fark <b>1 tane</b> ile <b>1 mol</b> arasındaki farktır:</p>
+                        <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono space-y-1">
+                            <p class="text-emerald-400">• 1 mol H₂O = 18 gramdır.</p>
+                            <p class="text-amber-400">• 1 tane H₂O = 18 akb'dir.</p>
+                            <p class="text-blue-400">• 1 tane H₂O = 18 / N<sub>A</sub> gramdır.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: GAZ YASALARI REHBERİ -->
+        <section id="tab-guide-gases" class="tab-content hidden space-y-8">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <h1 class="text-3xl font-extrabold text-white sm:text-4xl">Gaz Yasaları Rehberi</h1>
+                <p class="text-slate-400 text-sm sm:text-base">Gazların basınç (P), hacim (V), sıcaklık (T) ve mol sayısı (n) arasındaki ilişkileri açıklayan temel yasalar.</p>
+            </div>
+
+            <!-- İdeal Gaz Denklemi Vurgu Kartı -->
+            <div class="glass-panel p-6 rounded-2xl border-2 border-indigo-500/40 glow-effect text-center space-y-3">
+                <span class="text-xs font-semibold text-indigo-400 uppercase tracking-widest block">İdeal Gaz Denklemi</span>
+                <div class="text-3xl sm:text-4xl font-extrabold font-mono text-emerald-400 tracking-wide">
+                    P · V = n · R · T
+                </div>
+                <p class="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto">
+                    <b>P:</b> Basınç (atm) | <b>V:</b> Hacim (Litre) | <b>n:</b> Mol Sayısı | <b>R:</b> Gaz Sabiti (0.08206 L·atm/mol·K) | <b>T:</b> Mutlak Sıcaklık (Kelvin: °C + 273.15)
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Boyle Yasası -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-l-4 border-blue-500">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">1. Boyle - Mariotte Yasası</h3>
+                        <span class="text-xs px-2 py-1 bg-blue-900/50 text-blue-300 rounded font-mono">P - V İlişkisi</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Sabit sıcaklık (T) ve mol sayısında (n), bir gazın <b>basıncı ile hacmi ters orantılıdır</b>. Hacim küçüldükçe gaz tanecikleri daha sıkışık alana çarparak basıncı artırır.
+                    </p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-blue-300 text-center">
+                        P₁ · V₁ = P₂ · V₂ &nbsp;&nbsp;(n, T sabit)
+                    </div>
+                </div>
+
+                <!-- Charles Yasası -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-l-4 border-emerald-500">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">2. Charles Yasası</h3>
+                        <span class="text-xs px-2 py-1 bg-emerald-900/50 text-emerald-300 rounded font-mono">V - T İlişkisi</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Sabit basınç (P) ve mol sayısında (n), bir gazın <b>hacmi mutlak sıcaklığı (Kelvin) ile doğru orantılıdır</b>. Gaz ısındıkça genleşir ve hacmi büyür.
+                    </p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-emerald-300 text-center">
+                        V₁ / T₁ = V₂ / T₂ &nbsp;&nbsp;(P, n sabit)
+                    </div>
+                </div>
+
+                <!-- Gay-Lussac Yasası -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-l-4 border-amber-500">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">3. Gay-Lussac Yasası</h3>
+                        <span class="text-xs px-2 py-1 bg-amber-900/50 text-amber-300 rounded font-mono">P - T İlişkisi</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Sabit hacim (V) ve mol sayısında (n), bir gazın <b>basıncı mutlak sıcaklığı ile doğru orantılıdır</b>. Sıcaklık arttıkça taneciklerin hızı ve çeperlere yaptığı basınç artar.
+                    </p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-amber-300 text-center">
+                        P₁ / T₁ = P₂ / T₂ &nbsp;&nbsp;(V, n sabit)
+                    </div>
+                </div>
+
+                <!-- Avogadro Yasası -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-l-4 border-purple-500">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">4. Avogadro Yasası</h3>
+                        <span class="text-xs px-2 py-1 bg-purple-900/50 text-purple-300 rounded font-mono">V - n İlişkisi</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Sabit sıcaklık (T) ve basınçta (P), gazın <b>hacmi mol sayısı ile doğru orantılıdır</b>. Aynı sıcaklık ve basınçtaki gazların eşit hacimleri eşit sayıda molekül içerir.
+                    </p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-purple-300 text-center">
+                        V₁ / n₁ = V₂ / n₂ &nbsp;&nbsp;(P, T sabit)
+                    </div>
+                </div>
+
+                <!-- Birleşik Gaz Yasası -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-l-4 border-cyan-500">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">5. Birleşik Gaz Yasası</h3>
+                        <span class="text-xs px-2 py-1 bg-cyan-900/50 text-cyan-300 rounded font-mono">P, V, T Değişimi</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Boyle, Charles ve Gay-Lussac yasalarının birleşimidir. Mol sayısı (n) sabit tutulan bir gaz örneğinin <b>farklı durumlar arasındaki basınç, hacim ve sıcaklık değişimlerini</b> hesaplamak için kullanılır.
+                    </p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-cyan-300 text-center">
+                        (P₁ · V₁) / T₁ = (P₂ · V₂) / T₂ &nbsp;&nbsp;(n sabit)
+                    </div>
+                </div>
+
+                <!-- Dalton Kısmi Basınçlar Yasası -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-l-4 border-rose-500">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">6. Dalton Kısmi Basınçlar Yasası</h3>
+                        <span class="text-xs px-2 py-1 bg-rose-900/50 text-rose-300 rounded font-mono">Gaz Karışımları</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Tepkime vermeyen bir gaz karışımının <b>toplam basıncı, her bir gazın tek başına yaptığı kısmi basınçların toplamına eşittir</b>. Bir gazın kısmi basıncı mol kesri ile doğru orantılıdır.
+                    </p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-rose-300 text-center">
+                        P<sub>toplam</sub> = P<sub>A</sub> + P<sub>B</sub> + ... &nbsp;|&nbsp; P<sub>A</sub> = P<sub>toplam</sub> · (n<sub>A</sub> / n<sub>toplam</sub>)
+                    </div>
+                </div>
+
+                <!-- Graham Difüzyon Yasası -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-l-4 border-teal-500">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">7. Graham Efüzyon / Difüzyon Yasası</h3>
+                        <span class="text-xs px-2 py-1 bg-teal-900/50 text-teal-300 rounded font-mono">Gazların Yayılma Hızı</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Aynı sıcaklıkta gazların <b>yayılma hızları (v), molar kütlelerinin (M<sub>a</sub>) ve yoğunluklarının karekökü ile ters orantılıdır</b>. Haffif gazlar daha hızlı yayılır.
+                    </p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-teal-300 text-center">
+                        v₁ / v₂ = √(M<sub>a2</sub> / M<sub>a1</sub>) = √(d₂ / d₁)
+                    </div>
+                </div>
+
+                <!-- Henry Yasası -->
+                <div class="glass-panel p-6 rounded-2xl space-y-3 border-l-4 border-indigo-500">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-white">8. Henry Yasası</h3>
+                        <span class="text-xs px-2 py-1 bg-indigo-900/50 text-indigo-300 rounded font-mono">Gazların Çözünürlüğü</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Sabit sıcaklıkta, bir gazın sıvı içerisindeki <b>çözünürlüğü (C), sıvının üzerindeki gazın kısmi basıncı (P) ile doğru orantılıdır</b>. Basınç arttıkça gazın sıvıdaki çözünürlüğü artar.
+                    </p>
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800 text-xs font-mono text-indigo-300 text-center">
+                        C = k<sub>H</sub> · P &nbsp;&nbsp;(k<sub>H</sub>: Henry Sabiti)
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-slate-950 py-6 mt-12 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>ChemMol Calculator &copy; 2026 - Kimya Eğitimi ve Mol & AKB Hesaplama Aracı</p>
+        </div>
+    </footer>
+
+    <!-- LOGIC & SCRIPTS -->
+    <script>
+        const NA = 6.02214076e23;
+        const MOLAR_GAS_VOLUME_STP = 22.414;
+
+        const ATOMIC_WEIGHTS = {
+            "H": 1.008, "He": 4.0026, "Li": 6.94, "Be": 9.0122, "B": 10.81,
+            "C": 12.011, "N": 14.007, "O": 15.999, "F": 18.998, "Ne": 20.180,
+            "Na": 22.990, "Mg": 24.305, "Al": 26.982, "Si": 28.085, "P": 30.974,
+            "S": 32.06, "Cl": 35.45, "Ar": 39.948, "K": 39.098, "Ca": 40.078,
+            "Fe": 55.845, "Cu": 63.546, "Zn": 65.38, "Br": 79.904, "Ag": 107.87,
+            "I": 126.90, "Ba": 137.33, "Au": 196.97, "Pb": 207.2
+        };
+
+        let currentCalcMode = 'mol';
+        let currentCalcValue = '1';
+        let currentMa = 18.015;
+        let currentFormula = 'C6H12O6';
+        let compositionChart = null;
+
+        window.onload = function() {
+            executeCalc();
+            calculateFormula();
+            convertAkbToGram();
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                btn.classList.add('text-slate-300', 'hover:bg-slate-800');
+            });
+
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-btn-' + tabId);
+            if(activeBtn) {
+                activeBtn.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                activeBtn.classList.remove('text-slate-300', 'hover:bg-slate-800');
+            }
+        }
+
+        // --- CALCULATOR INTERFACE LOGIC ---
+        function setCalcMode(mode) {
+            currentCalcMode = mode;
+            document.querySelectorAll('#mode-btn-mol, #mode-btn-mass, #mode-btn-particles, #mode-btn-volume').forEach(btn => {
+                btn.className = 'calc-btn py-2.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-center';
+            });
+
+            const modeBtn = document.getElementById('mode-btn-' + mode);
+            if(modeBtn) {
+                modeBtn.className = 'calc-btn py-2.5 rounded-xl bg-indigo-600 text-white text-center shadow';
+            }
+
+            const unitLabel = document.getElementById('calc-display-unit');
+            const modeLabel = document.getElementById('current-mode-label');
+
+            if(mode === 'mol') {
+                unitLabel.innerText = 'mol';
+                modeLabel.innerText = 'Mol Cinsinden Hesapla';
+            } else if(mode === 'mass') {
+                unitLabel.innerText = 'gram';
+                modeLabel.innerText = 'Kütle (Gram) Cinsinden Hesapla';
+            } else if(mode === 'particles') {
+                unitLabel.innerText = 'tane';
+                modeLabel.innerText = 'Tanecik Sayısı Cinsinden Hesapla';
+            } else if(mode === 'volume') {
+                unitLabel.innerText = 'Litre';
+                modeLabel.innerText = 'Gaz Hacmi (N.K) Cinsinden Hesapla';
+            }
+
+            executeCalc();
+        }
+
+        function pressKey(char) {
+            if(currentCalcValue === '0' && char !== '.') {
+                currentCalcValue = char;
+            } else {
+                if(char === '.' && currentCalcValue.includes('.')) return;
+                currentCalcValue += char;
+            }
+            updateCalcDisplay();
+            executeCalc();
+        }
+
+        function backspaceKey() {
+            if(currentCalcValue.length > 1) {
+                currentCalcValue = currentCalcValue.slice(0, -1);
+            } else {
+                currentCalcValue = '0';
+            }
+            updateCalcDisplay();
+            executeCalc();
+        }
+
+        function clearCalc() {
+            currentCalcValue = '0';
+            updateCalcDisplay();
+            executeCalc();
+        }
+
+        function updateCalcDisplay() {
+            document.getElementById('calc-display').innerText = currentCalcValue;
+        }
+
+        function applyPreset() {
+            const select = document.getElementById('mol-preset-select');
+            currentMa = parseFloat(select.value) || 18.015;
+            document.getElementById('display-ma-val').innerText = currentMa;
+            executeCalc();
+        }
+
+        function executeCalc() {
+            let val = parseFloat(currentCalcValue) || 0;
+            let molVal = 0;
+
+            if (currentCalcMode === 'mol') {
+                molVal = val;
+            } else if (currentCalcMode === 'mass') {
+                molVal = val / currentMa;
+            } else if (currentCalcMode === 'particles') {
+                molVal = val / NA;
+            } else if (currentCalcMode === 'volume') {
+                molVal = val / MOLAR_GAS_VOLUME_STP;
+            }
+
+            let massVal = molVal * currentMa;
+            let particleVal = molVal * NA;
+            let volVal = molVal * MOLAR_GAS_VOLUME_STP;
+
+            // Output updates
+            document.getElementById('res-card-mol').innerText = molVal.toLocaleString('tr-TR', { maximumFractionDigits: 4 });
+            document.getElementById('res-card-mass').innerText = massVal.toLocaleString('tr-TR', { maximumFractionDigits: 3 });
+            document.getElementById('res-card-particles').innerText = particleVal === 0 ? '0' : formatScientific(particleVal);
+            document.getElementById('res-card-volume').innerText = volVal.toLocaleString('tr-TR', { maximumFractionDigits: 2 });
+
+            // Step by step guide text (LaTeX / Dollar symbols removed)
+            let stepsHtml = `
+                <p>• <b>Molar Kütle (M<sub>a</sub>):</b> ${currentMa} g/mol</p>
+                <p>• <b>Hesaplanan Mol Sayısı (n):</b> ${molVal.toFixed(4)} mol</p>
+                <p>• <b>Kütle (m):</b> n × M<sub>a</sub> = ${molVal.toFixed(4)} × ${currentMa} = <b>${massVal.toFixed(3)} gram</b></p>
+                <p>• <b>Tanecik Sayısı (N):</b> n × N<sub>A</sub> = ${molVal.toFixed(4)} × (6.022 × 10²³) = <b>${formatScientific(particleVal)} tane</b></p>
+                <p>• <b>Gaz Hacmi (N.K):</b> n × 22.4 = ${molVal.toFixed(4)} × 22.4 = <b>${volVal.toFixed(2)} Litre</b></p>
+            `;
+            document.getElementById('mol-step-by-step').innerHTML = stepsHtml;
+        }
+
+        function formatScientific(num) {
+            if (num === 0) return "0";
+            let exp = Math.floor(Math.log10(num));
+            let coeff = (num / Math.pow(10, exp)).toFixed(3);
+            return `${coeff} × 10<sup>${exp}</sup>`;
+        }
+
+        // --- FORMULA CALCULATOR INTERFACE ---
+        function pressFormulaKey(char) {
+            currentFormula += char;
+            document.getElementById('formula-display').innerText = currentFormula;
+            calculateFormula();
+        }
+
+        function clearFormula() {
+            currentFormula = '';
+            document.getElementById('formula-display').innerText = '...';
+        }
+
+        function setFormula(formulaStr) {
+            currentFormula = formulaStr;
+            document.getElementById('formula-display').innerText = currentFormula;
+            calculateFormula();
+        }
+
+        function parseFormula(formula) {
+            const reg = /([A-Z][a-z]*)(\d*)|(\()|(\))(\d*)/g;
+            let stack = [{}];
+            let match;
+
+            while ((match = reg.exec(formula)) !== null) {
+                let elem = match[1];
+                let count = match[2] ? parseInt(match[2]) : 1;
+                let openParen = match[3];
+                let closeParen = match[4];
+                let groupCount = match[5] ? parseInt(match[5]) : 1;
+
+                if (elem) {
+                    let top = stack[stack.length - 1];
+                    top[elem] = (top[elem] || 0) + count;
+                } else if (openParen) {
+                    stack.push({});
+                } else if (closeParen) {
+                    let popped = stack.pop();
+                    let top = stack[stack.length - 1];
+                    for (let e in popped) {
+                        top[e] = (top[e] || 0) + popped[e] * groupCount;
+                    }
+                }
+            }
+            return stack[0];
+        }
+
+        function calculateFormula() {
+            if(!currentFormula) return;
+
+            try {
+                let parsed = parseFormula(currentFormula);
+                let totalMass = 0;
+                let elementDetails = [];
+
+                for (let elem in parsed) {
+                    let count = parsed[elem];
+                    let weight = ATOMIC_WEIGHTS[elem] || 12.0;
+                    let elemTotal = count * weight;
+                    totalMass += elemTotal;
+                    elementDetails.push({
+                        element: elem,
+                        count: count,
+                        weight: weight,
+                        totalMass: elemTotal
+                    });
+                }
+
+                if (totalMass === 0 || elementDetails.length === 0) return;
+
+                document.getElementById('res-formula-display').innerHTML = formatFormulaSubscripts(currentFormula);
+                document.getElementById('res-molar-mass').innerHTML = `${totalMass.toFixed(3)} <span class="text-sm font-normal text-slate-300">g/mol</span>`;
+                
+                document.getElementById('res-single-akb').innerText = `${totalMass.toFixed(3)} akb`;
+                let singleGram = totalMass / NA;
+                document.getElementById('res-single-gram').innerHTML = `${formatScientific(singleGram)} g`;
+
+                let tableBodyHtml = "";
+                let chartLabels = [];
+                let chartData = [];
+                let chartColors = ['#6366f1', '#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'];
+
+                elementDetails.forEach((item) => {
+                    let percent = ((item.totalMass / totalMass) * 100).toFixed(2);
+                    tableBodyHtml += `
+                        <tr class="hover:bg-slate-800/40">
+                            <td class="p-2 font-bold text-indigo-300">${item.element}</td>
+                            <td class="p-2 text-center">${item.count}</td>
+                            <td class="p-2 text-right">${item.weight.toFixed(2)}</td>
+                            <td class="p-2 text-right font-semibold text-emerald-400">%${percent}</td>
+                        </tr>
+                    `;
+                    chartLabels.push(item.element);
+                    chartData.push(percent);
+                });
+                document.getElementById('res-element-table-body').innerHTML = tableBodyHtml;
+
+                renderCompositionChart(chartLabels, chartData, chartColors);
+
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        function formatFormulaSubscripts(formula) {
+            return formula.replace(/(\d+)/g, '<sub>$1</sub>');
+        }
+
+        function renderCompositionChart(labels, data, colors) {
+            const ctx = document.getElementById('compositionChart').getContext('2d');
+            
+            if (compositionChart) {
+                compositionChart.destroy();
+            }
+
+            compositionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#94a3b8',
+                                font: { size: 10 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function convertAkbToGram() {
+            let akbVal = parseFloat(document.getElementById('input-akb-val').value) || 0;
+            let gramVal = akbVal / NA;
+            document.getElementById('akb-to-gram-res').innerHTML = `${formatScientific(gramVal)} g`;
+        }
+    </script>
+</body>
+</html>
